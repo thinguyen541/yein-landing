@@ -1,0 +1,79 @@
+.admin-app * { box-sizing: border-box; }
+.admin-app { min-height: 100vh; margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #f4f5f4; color: #1b1f1e; font-size: 14px; }
+.admin-app .hidden { display: none !important; }
+.admin-app .center { min-height: 100vh; display: grid; place-items: center; }
+.admin-app .box { background: #fff; padding: 24px; border-radius: 10px; width: min(460px, 92vw); display: flex; flex-direction: column; gap: 12px; }
+.admin-app .box.wide { width: 100%; max-width: 760px; }
+.admin-app .box h1, .admin-app .box h3 { margin: 0 0 4px; }
+.admin-app label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: #4a504e; flex: 1; }
+.admin-app label.check { flex-direction: row; align-items: center; gap: 8px; margin-top: 20px; }
+.admin-app input, .admin-app textarea, .admin-app select { font: inherit; padding: 8px 10px; border: 1px solid #d5d8d6; border-radius: 6px; background: #fff; }
+.admin-app button { font: inherit; padding: 8px 14px; border: 0; border-radius: 6px; background: #0f302d; color: #fff; cursor: pointer; font-weight: 600; }
+.admin-app button:hover { background: #16403c; }
+.admin-app button.ghost { background: transparent; color: #0f302d; }
+.admin-app button.ghost:hover { background: #e8ecea; }
+.admin-app button.danger { background: transparent; color: #c62828; }
+.admin-app button.danger:hover { background: #fdecec; }
+.admin-app .ghost-link { color: #0f302d; margin-right: 8px; text-decoration: none; font-weight: 600; }
+.admin-app .error { color: #c62828; min-height: 1em; margin: 0; font-size: 13px; }
+.admin-app .error.ok { color: #1a7f3c; }
+.admin-app .row { display: flex; gap: 12px; flex-wrap: wrap; }
+.admin-app .actions { display: flex; justify-content: flex-end; gap: 8px; }
+.admin-app .hint { color: #6c7370; margin: 0 0 12px; }
+
+.admin-app .topbar { position: sticky; top: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 10px 24px; background: #fff; border-bottom: 1px solid #e3e6e4; flex-wrap: wrap; }
+.admin-app .brand { display: flex; align-items: center; gap: 24px; }
+.admin-app .tabs { display: flex; gap: 4px; }
+.admin-app .tabs button { background: transparent; color: #4a504e; font-weight: 500; }
+.admin-app .tabs button.active { background: #0f302d; color: #fff; }
+.admin-app .topbar #who { color: #6c7370; margin-right: 4px; }
+.admin-app .wrap { max-width: 1240px; margin: 20px auto 60px; padding: 0 16px; }
+.admin-app .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.admin-app .toolbar h2 small { color: #6c7370; font-weight: 400; font-size: 14px; }
+.admin-app .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.admin-app table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+.admin-app th, .admin-app td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eef0ef; vertical-align: middle; }
+.admin-app th { font-size: 12px; color: #6c7370; background: #fafbfa; text-transform: uppercase; letter-spacing: .03em; }
+.admin-app td img { width: 72px; height: 45px; object-fit: cover; border-radius: 4px; background: #eee; display: block; }
+.admin-app td.num { white-space: nowrap; }
+.admin-app td .sub { color: #8a908e; font-size: 12px; }
+.admin-app .badge { font-size: 12px; padding: 2px 8px; border-radius: 99px; background: #e7f6ec; color: #1a7f3c; white-space: nowrap; }
+.admin-app .badge.off { background: #f1f1f1; color: #888; }
+.admin-app .badge.star { background: #f7eddf; color: #8a5a22; }
+.admin-app .toggle { background: transparent; padding: 0; }
+.admin-app .toggle:hover { background: transparent; }
+
+dialog { border: 0; padding: 0; border-radius: 10px; }
+dialog::backdrop { background: rgba(0,0,0,.35); }
+dialog .box { width: min(640px, 94vw); }
+.admin-app .img-field { display: flex; gap: 12px; align-items: flex-start; }
+.admin-app .img-field img { width: 140px; height: 88px; object-fit: cover; border-radius: 6px; background: #eee; flex-shrink: 0; }
+.admin-app .img-field > div { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.admin-app .upload input { padding: 6px; }
+/* Modal (Vue) */
+.admin-app .overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.35); display: flex; align-items: flex-start; justify-content: center; padding: 6vh 16px; overflow-y: auto; }
+.admin-app .overlay .box { width: min(640px, 94vw); box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.admin-app .tabs a { padding: 8px 14px; border-radius: 6px; color: #4a504e; text-decoration: none; font-weight: 500; }
+.admin-app .tabs a.router-link-active { background: #0f302d; color: #fff; }
+.admin-app .center .box h1 { font-weight: 300; letter-spacing: .3em; }
+.admin-app .form { display: flex; flex-direction: column; gap: 12px; }
+.admin-app .tabs a { border: 0; }
+.admin-app button:disabled { opacity: .6; cursor: default; }
+.admin-app .lens-table input { width: 100%; }
+.admin-app .lens-table td { vertical-align: top; }
+.admin-app .box h3 { font-size: 16px; }
+.admin-app .pimgs { border: 1px dashed #cfd4d1; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.admin-app .pimgs-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #4a504e; }
+.admin-app .upload-btn { position: relative; overflow: hidden; display: inline-block; flex: none; padding: 7px 12px; border-radius: 6px; background: #0f302d; color: #fff; font-weight: 600; cursor: pointer; }
+.admin-app .upload-btn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.admin-app .pimgs-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+.admin-app .pimgs-list figure { position: relative; margin: 0; border: 2px solid transparent; border-radius: 6px; overflow: hidden; background: #f3f3f1; }
+.admin-app .pimgs-list figure.main { border-color: #b0895c; }
+.admin-app .pimgs-list img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.admin-app .pimgs-list figcaption { display: flex; justify-content: center; gap: 2px; background: #fff; }
+.admin-app .pimgs-list figcaption button { padding: 4px 8px; }
+.admin-app .pimgs-list .tag { position: absolute; left: 4px; top: 4px; font-size: 10px; background: #b0895c; color: #fff; padding: 1px 6px; border-radius: 99px; }
+.admin-app .pimgs-list .tag-old { left: auto; right: 4px; background: #888; }
+.admin-app .thumb-wrap { position: relative; display: inline-block; }
+.admin-app .thumb-count { position: absolute; right: 2px; bottom: 2px; font-size: 10px; background: rgba(0,0,0,.6); color: #fff; padding: 0 4px; border-radius: 4px; }
