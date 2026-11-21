@@ -1,0 +1,33 @@
+# HTTPS with Caddy in front of the nginx "web" container.
+# Enabled by adding this file to COMPOSE_FILE in .env (deploy-vps.sh does it when you pass a domain).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  web:
+    # Only Caddy talks to nginx now
+    ports: !reset []
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:

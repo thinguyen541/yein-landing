@@ -1,0 +1,14 @@
+# Use the MySQL installed on this Windows machine instead of the "db" container.
+# Enabled through COMPOSE_FILE in .env, so a plain `docker compose up -d --build` picks it up.
+services:
+  db:
+    # Not started unless you run: docker compose --profile docker-db up
+    profiles: ["docker-db"]
+
+  backend:
+    environment:
+      DB_HOST: host.docker.internal
+      DB_PORT: ${LOCAL_DB_PORT:-3306}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on: !reset []
