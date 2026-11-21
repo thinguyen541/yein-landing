@@ -1,0 +1,11 @@
+# Dev override: backend auto-reloads when you edit files in ./backend/src
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  backend:
+    environment:
+      NODE_ENV: development
+    command: ["node", "--watch", "src/index.js"]
+    volumes:
+      - ./backend/src:/app/src
+    ports:
+      - "4000:4000"
