@@ -31,6 +31,7 @@ const routes = [
       { path: '', redirect: { name: 'admin-products' } },
       { path: 'products', name: 'admin-products', component: () => import('./pages/admin/AdminProducts.vue') },
       { path: 'collections', name: 'admin-collections', component: () => import('./pages/admin/AdminCollections.vue') },
+      { path: 'dealers', name: 'admin-dealers', component: () => import('./pages/admin/AdminDealers.vue') },
       { path: 'settings', name: 'admin-settings', component: () => import('./pages/admin/AdminSettings.vue') },
     ],
   },

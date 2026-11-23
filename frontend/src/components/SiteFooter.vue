@@ -29,7 +29,7 @@ const year = new Date().getFullYear()
           <RouterLink to="/san-pham">Tất cả sản phẩm</RouterLink>
           <RouterLink :to="{ path: '/', hash: '#bo-suu-tap' }">Bộ sưu tập</RouterLink>
           <RouterLink to="/ve-yein">Về YEIN</RouterLink>
-          <RouterLink :to="{ path: '/', hash: '#dai-ly' }">Đại lý</RouterLink>
+          <RouterLink :to="{ path: '/', hash: '#dai-ly' }">Hệ thống đại lý</RouterLink>
         </div>
       </div>
       <div class="foot-bar">

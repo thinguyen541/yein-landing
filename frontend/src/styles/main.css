@@ -88,9 +88,9 @@ button { font: inherit; cursor: pointer; }
 /* ---------- Product cards ---------- */
 .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px 22px; }
 .card { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; display: flex; flex-direction: column; color: inherit; }
-.card-img { aspect-ratio: 1 / 1; background: var(--card); overflow: hidden; border-radius: 3px; }
-.card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s var(--ease); }
-.card:hover .card-img img { transform: scale(1.05); }
+.card-img { aspect-ratio: 1 / 1; background: var(--card); overflow: hidden; border-radius: 3px; display: flex; align-items: center; justify-content: center; }
+.card-img img { width: 100%; height: 100%; object-fit: contain; transition: transform 0.6s var(--ease); }
+.card:hover .card-img img { transform: scale(1.03); }
 .card-body { padding: 14px 2px 0; display: flex; flex-direction: column; gap: 2px; }
 .card-meta { font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
 .card-name { font-size: 15.5px; font-weight: 500; color: var(--ink); }
@@ -116,7 +116,7 @@ button { font: inherit; cursor: pointer; }
 .col-price strong { font-size: 22px; color: var(--green); font-weight: 600; }
 .col-thumbs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 26px; }
 .col-thumb { background: none; border: 0; padding: 0; text-align: left; cursor: pointer; }
-.col-thumb img { aspect-ratio: 1; object-fit: cover; background: var(--card); border-radius: 2px; }
+.col-thumb img { aspect-ratio: 1; object-fit: contain; background: var(--card); border-radius: 2px; }
 .col-thumb span { display: block; font-size: 12px; color: var(--muted); margin-top: 4px; }
 
 /* ---------- Brand band ---------- */
@@ -215,25 +215,47 @@ button { font: inherit; cursor: pointer; }
 .show-grid img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; aspect-ratio: 4 / 3; }
 
 /* ---------- Modal ---------- */
-.modal { position: fixed; inset: 0; z-index: 100; background: rgba(6, 25, 23, 0.62); display: flex; align-items: center; justify-content: center; padding: 20px; }
-.modal-box { background: #fff; width: min(1040px, 100%); max-height: 92vh; overflow: auto; border-radius: 4px; display: grid; grid-template-columns: 7fr 5fr; position: relative; }
-.modal-img { background: var(--card); display: flex; flex-direction: column; justify-content: center; }
-.modal-img > img { width: 100%; height: auto; }
-.modal-thumbs { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: #fff; }
-.modal-thumbs button { flex: none; width: 64px; height: 64px; padding: 0; border: 2px solid transparent; border-radius: 3px; background: var(--card); overflow: hidden; }
-.modal-thumbs button.active { border-color: var(--gold); }
-.modal-thumbs img { width: 100%; height: 100%; object-fit: cover; }
-.modal-info { padding: 38px 34px; display: flex; flex-direction: column; gap: 8px; }
-.modal-info h3 { font-family: var(--serif); font-weight: 400; font-size: 34px; margin: 0; line-height: 1.1; }
-.modal-info .code { color: var(--muted); font-size: 14px; }
-.modal-info .price { font-size: 24px; margin: 8px 0 4px; }
-.lens { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 14px; }
-.lens h4 { margin: 0 0 8px; font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
-.lens li { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 5px 0; border-bottom: 1px dashed var(--line); }
+.modal { position: fixed; inset: 0; z-index: 100; background: rgba(6, 25, 23, 0.66); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.modal-box { position: relative; background: #fff; width: min(1120px, 100%); height: min(720px, 92vh); border-radius: 8px; overflow: hidden; display: grid; grid-template-columns: 1.15fr 1fr; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); }
+/* Close button stays put: it belongs to the box, only the inner panels scroll */
+.modal-close { position: absolute; right: 16px; top: 16px; z-index: 5; width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.95); color: var(--ink); font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12); transition: background 0.15s, color 0.15s, transform 0.15s; }
+.modal-close:hover { background: var(--green); color: #fff; border-color: var(--green); transform: rotate(90deg); }
+.modal-img { background: #f4f4f2; display: flex; flex-direction: column; min-height: 0; }
+.modal-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 28px; }
+.modal-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.modal-thumbs { display: flex; gap: 10px; padding: 14px 20px 18px; overflow-x: auto; justify-content: center; }
+.modal-thumbs button { flex: none; width: 68px; height: 68px; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #fff; overflow: hidden; opacity: 0.7; transition: opacity 0.15s, border-color 0.15s; }
+.modal-thumbs button:hover { opacity: 1; }
+.modal-thumbs button.active { border-color: var(--green); opacity: 1; }
+.modal-thumbs img { width: 100%; height: 100%; object-fit: contain; }
+.modal-info { overflow-y: auto; padding: 48px 40px 36px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.modal-info h3 { font-family: var(--serif); font-weight: 400; font-size: 38px; margin: 0; line-height: 1.08; padding-right: 40px; }
+.modal-info .code { display: inline-flex; align-self: flex-start; gap: 8px; font-size: 13px; color: var(--ink-soft); background: var(--paper); border-radius: 99px; padding: 4px 12px; }
+.modal-info .price { font-size: 28px; margin: 10px 0 0; }
+.modal-info .price-note { font-size: 13px; color: var(--muted); margin: 0; }
+.lens { margin-top: 14px; border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px; background: #fcfbf9; }
+.lens h4 { margin: 0 0 10px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
 .lens ul { list-style: none; margin: 0; padding: 0; }
+.lens li { display: flex; justify-content: space-between; gap: 12px; font-size: 14px; padding: 8px 0; border-top: 1px solid var(--line); }
+.lens li:first-child { border-top: 0; padding-top: 0; }
 .lens li b { font-weight: 600; color: var(--green); white-space: nowrap; }
-.modal-info .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
-.modal-close { position: absolute; right: 10px; top: 8px; z-index: 2; background: rgba(255, 255, 255, 0.92); border: 0; width: 38px; height: 38px; border-radius: 50%; font-size: 22px; line-height: 1; }
+.modal-info .actions { display: flex; flex-direction: column; gap: 10px; margin-top: auto; padding-top: 22px; }
+.modal-info .actions .btn { width: 100%; padding: 15px 24px; }
+/* Hide scrollbars inside the popup (still scrollable) */
+.modal-info, .modal-thumbs { scrollbar-width: none; -ms-overflow-style: none; }
+.modal-info::-webkit-scrollbar, .modal-thumbs::-webkit-scrollbar { display: none; }
+
+/* ---------- Focus / active states (brand green) ---------- */
+input, select, textarea { font: inherit; color: var(--ink); transition: border-color 0.15s, box-shadow 0.15s; }
+input:hover, select:hover, textarea:hover { border-color: #b9c3c0; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green) !important; box-shadow: 0 0 0 3px rgba(15, 48, 45, 0.14); }
+input[type='checkbox'], input[type='radio'] { accent-color: var(--green); }
+::selection { background: var(--green); color: #fff; }
+.btn:focus-visible, .chip:focus-visible, .card:focus-visible, .modal-close:focus-visible, .modal-thumbs button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--gold); outline-offset: 3px;
+}
+.btn:active, .chip:active { transform: translateY(1px); }
+.card:focus-visible { border-radius: 4px; }
 
 /* ---------- Misc ---------- */
 .zalo-float { position: fixed; right: 18px; bottom: 18px; z-index: 60; background: #0068ff; color: #fff; border-radius: 99px; padding: 12px 20px; font-weight: 600; font-size: 14px; box-shadow: 0 8px 24px rgba(0, 104, 255, 0.35); }
@@ -265,7 +287,13 @@ button { font: inherit; cursor: pointer; }
   .media-split.reverse > :first-child { order: 0; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .foot-grid { grid-template-columns: 1fr; }
-  .modal-box { grid-template-columns: 1fr; }
+  .modal { padding: 0; }
+  .modal-box { grid-template-columns: 1fr; width: 100%; height: 100%; border-radius: 0; overflow-y: auto; scrollbar-width: none; }
+  .modal-box::-webkit-scrollbar { display: none; }
+  .modal-close { position: fixed; right: 14px; top: 14px; }
+  .modal-stage { padding: 56px 16px 8px; aspect-ratio: 1; }
+  .modal-info { overflow: visible; padding: 24px 20px 32px; }
+  .modal-info h3 { font-size: 30px; padding-right: 0; }
 }
 @media (max-width: 640px) {
   .wrap { padding: 0 18px; }
@@ -281,3 +309,26 @@ button { font: inherit; cursor: pointer; }
   .dealer-box { padding: 30px 22px; }
   .col-thumbs { grid-template-columns: repeat(4, 1fr); gap: 6px; }
 }
+
+/* ---------- Partner dealers ---------- */
+.dealers-head { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: end; margin-bottom: 32px; }
+.dealer-tools { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+.dealer-tools select, .dealer-tools input { font-size: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.dealer-tools input { flex: 1; min-width: 220px; }
+.dealer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.dealer-card { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 24px 22px 20px; display: flex; flex-direction: column; gap: 8px; transition: border-color 0.2s, box-shadow 0.2s; }
+.dealer-card:hover { border-color: rgba(15, 48, 45, 0.35); box-shadow: 0 12px 30px rgba(15, 48, 45, 0.08); }
+.dealer-province { align-self: flex-start; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; color: var(--gold); }
+.dealer-card h3 { font-family: var(--serif); font-weight: 500; font-size: 24px; margin: 0; line-height: 1.2; }
+.dealer-line { margin: 0; display: flex; gap: 8px; font-size: 14.5px; color: var(--ink-soft); }
+.dealer-line a:hover { color: var(--green); text-decoration: underline; }
+.dealer-note { margin: 0; font-size: 13.5px; color: var(--muted); }
+.dealer-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 12px; }
+.dealer-actions .btn { padding: 9px 16px; font-size: 13.5px; }
+.join-box { margin-top: 48px; display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: center; background: var(--green); color: #f3efe7; border-radius: 6px; padding: 40px 44px; }
+.join-box h3 { font-family: var(--serif); font-weight: 400; font-size: 32px; margin: 0 0 8px; }
+.join-box ul { margin: 0; padding-left: 18px; color: rgba(243, 239, 231, 0.8); }
+.join-box .btn { justify-self: end; }
+@media (max-width: 1100px) { .dealer-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 920px) { .dealers-head, .join-box { grid-template-columns: 1fr; gap: 20px; } .join-box .btn { justify-self: start; } }
+@media (max-width: 640px) { .dealer-grid { grid-template-columns: 1fr; } .join-box { padding: 30px 22px; } }

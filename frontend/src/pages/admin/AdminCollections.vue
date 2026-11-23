@@ -75,6 +75,13 @@ async function remove(c) {
     window.alert(err.message)
   }
 }
+
+// Double-click a row to edit it (ignored on buttons/links inside the row)
+function rowDblClick(e, item) {
+  if (e.target.closest('button, a, input, select, label')) return
+  window.getSelection?.()?.removeAllRanges()
+  openEdit(item)
+}
 </script>
 
 <template>
@@ -92,7 +99,7 @@ async function remove(c) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="c in collections" :key="c.id">
+      <tr v-for="c in collections" :key="c.id" class="row-edit" title="Nháy đúp để sửa" @dblclick="rowDblClick($event, c)">
         <td>{{ c.sort_order }}</td>
         <td><img v-if="c.cover_image" :src="thumb(c.cover_image)" alt="" /></td>
         <td><b>{{ c.name }}</b><div class="sub">{{ c.tagline }}</div></td>

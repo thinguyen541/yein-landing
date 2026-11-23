@@ -142,6 +142,26 @@ async function migrate() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);
 
+  // Partner dealers shown on the website (managed in admin)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS dealers (
+      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      province VARCHAR(128),
+      address VARCHAR(512),
+      phone VARCHAR(64),
+      zalo VARCHAR(255),
+      map_url VARCHAR(1024),
+      opening_hours VARCHAR(255),
+      note VARCHAR(512),
+      is_active TINYINT(1) NOT NULL DEFAULT 1,
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_dealers_active (is_active, sort_order)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS settings (
       k VARCHAR(64) PRIMARY KEY,

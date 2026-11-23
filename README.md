@@ -67,6 +67,7 @@ frontend/
 | `/admin/login` | Đăng nhập admin (`POST /api/auth/login`) | – |
 | `/admin/products` | Quản lý sản phẩm, giá, bán chạy | ✔ JWT |
 | `/admin/collections` | Quản lý bộ sưu tập, giá chung | ✔ JWT |
+| `/admin/dealers` | Đại lý đối tác: tên, tỉnh/thành, địa chỉ, điện thoại, Zalo, link bản đồ, giờ mở cửa | ✔ JWT |
 | `/admin/settings` | Giá cộng thêm (nâng cấp tròng), thông tin công ty, hotline, Zalo… | ✔ JWT |
 
 Các route `/admin/*` có route guard: chưa đăng nhập → chuyển về `/admin/login`; token được kiểm tra bằng
@@ -157,6 +158,8 @@ docker compose exec db sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" yein' > 
 | GET | `/api/collections` | – | Danh sách bộ sưu tập + ảnh xem trước |
 | GET | `/api/collections/:slug` | – | Chi tiết bộ sưu tập |
 | GET | `/api/settings` | – | Thông tin liên hệ |
+| GET | `/api/dealers` | – | Đại lý đối tác đang hiển thị |
+| GET/POST/PUT/DELETE | `/api/admin/dealers[/:id]` | Bearer | Quản lý đại lý đối tác |
 | GET/POST/PUT/DELETE | `/api/admin/products[/:id]` | Bearer | Quản lý sản phẩm (`collection_id` bắt buộc, `image_ids` = danh sách ảnh theo thứ tự) |
 | POST | `/api/admin/resources` | Bearer | `{data: "data:image/...;base64,...", name}` → `{id, url}` (lưu file vào `backend/resources`) |
 | DELETE | `/api/admin/resources/:id` | Bearer | Xoá ảnh |

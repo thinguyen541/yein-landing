@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const products = require('./routes/products');
 const collections = require('./routes/collections');
 const settings = require('./routes/settings');
+const dealers = require('./routes/dealers');
 const resources = require('./routes/resources');
 
 const app = express();
@@ -24,9 +25,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', products.publicRouter);
 app.use('/api/collections', collections.publicRouter);
 app.use('/api/settings', settings.publicRouter);
+app.use('/api/dealers', dealers.publicRouter);
 app.use('/api/admin/products', products.adminRouter);
 app.use('/api/admin/collections', collections.adminRouter);
 app.use('/api/admin/settings', settings.adminRouter);
+app.use('/api/admin/dealers', dealers.adminRouter);
 
 // Product images (in Docker nginx serves the same folder)
 app.use('/resources', express.static(resources.RESOURCE_DIR, { maxAge: '7d' }));

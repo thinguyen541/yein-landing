@@ -45,7 +45,9 @@ watch(
       <div class="modal-box">
         <button class="modal-close" aria-label="Đóng" @click="emit('close')">×</button>
         <div class="modal-img">
-          <img :key="gallery[active]" :src="gallery[active]" :alt="product.name" @error="imgFallback($event, product.code)" />
+          <div class="modal-stage">
+            <img :key="gallery[active]" :src="gallery[active]" :alt="product.name" @error="imgFallback($event, product.code)" />
+          </div>
           <div v-if="gallery.length > 1" class="modal-thumbs">
             <button
               v-for="(g, i) in gallery"
@@ -59,9 +61,9 @@ watch(
         <div class="modal-info">
           <span class="eyebrow">{{ product.collection_name }}<template v-if="product.series"> · {{ product.series }}</template></span>
           <h3>{{ product.name }}</h3>
-          <span class="code">Mã: {{ product.code }}<template v-if="product.description"> · {{ product.description }}</template></span>
+          <span class="code">Mã {{ product.code }}<template v-if="product.description"> · {{ product.description }}</template></span>
           <PriceTag :product="product" />
-          <span class="muted" style="font-size: 13px">Giá bán lẻ kiến nghị.</span>
+          <p class="price-note">Giá bán lẻ kiến nghị.</p>
 
           <div v-if="lensOptions.length" class="lens">
             <h4>Nâng cấp tròng (cộng thêm)</h4>

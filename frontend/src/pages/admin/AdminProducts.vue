@@ -153,6 +153,13 @@ async function remove(p) {
     window.alert(err.message)
   }
 }
+
+// Double-click a row to edit it (ignored on buttons/links inside the row)
+function rowDblClick(e, item) {
+  if (e.target.closest('button, a, input, select, label')) return
+  window.getSelection?.()?.removeAllRanges()
+  openEdit(item)
+}
 </script>
 
 <template>
@@ -179,7 +186,7 @@ async function remove(p) {
     </div>
   </div>
   <p class="hint">
-    Bấm <b>Sửa</b> để đổi giá, ảnh, tên, mã của từng mẫu. Muốn đổi giá cả nhóm: lọc theo bộ sưu tập / dòng phụ rồi bấm <b>Đặt giá … mẫu đang lọc</b>.
+    <b>Nháy đúp vào dòng</b> (hoặc bấm <b>Sửa</b>) để đổi giá, ảnh, tên, mã của từng mẫu. Muốn đổi giá cả nhóm: lọc theo bộ sưu tập / dòng phụ rồi bấm <b>Đặt giá … mẫu đang lọc</b>.
     Ô giá để trống → dùng <b>giá chung</b> của bộ sưu tập.
   </p>
   <p v-if="loadError" class="error">{{ loadError }}</p>
@@ -191,7 +198,7 @@ async function remove(p) {
       </tr>
     </thead>
     <tbody>
-      <tr v-for="p in visible" :key="p.id">
+      <tr v-for="p in visible" :key="p.id" class="row-edit" title="Nháy đúp để sửa" @dblclick="rowDblClick($event, p)">
         <td>
           <span class="thumb-wrap">
             <img v-if="p.image_url" :src="thumb(p.image_url)" alt="" />

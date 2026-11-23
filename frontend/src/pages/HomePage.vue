@@ -1,11 +1,13 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useCatalog } from '../composables/useCatalog'
 import { money, thumb, imgFallback } from '../utils'
 import { stats, aboutText } from '../data/about'
 import ProductCard from '../components/ProductCard.vue'
 import ProductModal from '../components/ProductModal.vue'
 import ZaloLink from '../components/ZaloLink.vue'
+import DealerList from '../components/DealerList.vue'
+import { api } from '../api'
 
 const { products, collections, loaded, error } = useCatalog()
 const selected = ref(null)
@@ -25,6 +27,19 @@ const previewOf = (slug) =>
   [...products.value.filter((p) => p.collection_slug === slug)]
     .sort((a, b) => b.is_featured - a.is_featured)
     .slice(0, 4)
+
+// Partner dealers (managed in admin → Đại lý)
+const dealers = ref([])
+const dealersLoading = ref(true)
+onMounted(async () => {
+  try {
+    dealers.value = await api('/api/dealers')
+  } catch {
+    dealers.value = []
+  } finally {
+    dealersLoading.value = false
+  }
+})
 
 const formatStat = (s) => new Intl.NumberFormat('vi-VN').format(s.value) + s.suffix
 </script>
@@ -137,22 +152,29 @@ const formatStat = (s) => new Intl.NumberFormat('vi-VN').format(s.value) + s.suf
     </div>
   </section>
 
-  <!-- Dealers -->
-  <section id="dai-ly" class="section">
-    <div class="wrap split">
-      <div>
-        <p class="eyebrow">Đại lý</p>
-        <h2 class="display">Hợp tác phân phối cùng YEIN</h2>
-        <p class="lead">Dành cho cửa hàng kính và đối tác muốn đưa các bộ sưu tập YEIN đến khách hàng của mình.</p>
+  <!-- Partner dealers + become a dealer -->
+  <section id="dai-ly" class="section section--paper">
+    <div class="wrap">
+      <div class="dealers-head">
+        <div>
+          <p class="eyebrow">Hệ thống đại lý</p>
+          <h2 class="display">Đại lý đối tác YEIN</h2>
+        </div>
+        <p class="lead" style="margin: 0">Mua kính và đo mắt tại các cửa hàng đối tác chính thức của YEIN gần bạn.</p>
       </div>
-      <div class="dealer-box">
-        <h3>Trở thành đại lý</h3>
-        <ul>
-          <li>Nhận bảng giá đại lý theo từng dòng sản phẩm</li>
-          <li>Bộ hình ảnh và catalogue sản phẩm</li>
-          <li>Tư vấn chọn mẫu phù hợp với khách hàng của bạn</li>
-        </ul>
-        <ZaloLink class="btn btn-dark">Đăng ký qua Zalo</ZaloLink>
+
+      <DealerList :dealers="dealers" :loading="dealersLoading" />
+
+      <div class="join-box">
+        <div>
+          <h3>Trở thành đại lý YEIN</h3>
+          <ul>
+            <li>Nhận bảng giá đại lý theo từng dòng sản phẩm</li>
+            <li>Bộ hình ảnh và catalogue sản phẩm</li>
+            <li>Tư vấn chọn mẫu phù hợp với khách hàng của bạn</li>
+          </ul>
+        </div>
+        <ZaloLink class="btn btn-light">Đăng ký qua Zalo</ZaloLink>
       </div>
     </div>
   </section>

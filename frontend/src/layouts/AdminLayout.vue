@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { auth, clearSession } from '../auth'
 import { api } from '../api'
@@ -14,6 +14,42 @@ watch(
   () => auth.token,
   (t) => {
     if (!t) router.replace({ name: 'admin-login', query: { redirect: route.fullPath } })
+  }
+)
+
+// Sticky header heights -> CSS variables, so the page toolbar and table headers dock right below them
+const root = ref(null)
+let ro = null
+function measure() {
+  const el = root.value
+  if (!el) return
+  const top = el.querySelector('.topbar')
+  const tb = el.querySelector('main .toolbar')
+  el.style.setProperty('--admin-top', `${top ? top.offsetHeight : 0}px`)
+  el.style.setProperty('--toolbar-h', `${tb ? tb.offsetHeight : 0}px`)
+}
+async function observe() {
+  await nextTick()
+  if (!ro) return
+  ro.disconnect()
+  root.value?.querySelectorAll('.topbar, main .toolbar').forEach((n) => ro.observe(n))
+  measure()
+}
+onMounted(() => {
+  ro = new ResizeObserver(measure)
+  observe()
+  window.addEventListener('resize', measure)
+})
+onBeforeUnmount(() => {
+  ro?.disconnect()
+  window.removeEventListener('resize', measure)
+})
+// Each admin page has its own toolbar: re-measure after navigating (lazy pages render a moment later)
+watch(
+  () => route.fullPath,
+  () => {
+    observe()
+    setTimeout(observe, 300)
   }
 )
 
@@ -46,13 +82,14 @@ async function savePassword() {
 </script>
 
 <template>
-  <div class="admin-app">
+  <div ref="root" class="admin-app">
     <header class="topbar">
       <div class="brand">
         <strong>YEIN Admin</strong>
         <nav class="tabs">
           <RouterLink :to="{ name: 'admin-products' }">Sản phẩm</RouterLink>
           <RouterLink :to="{ name: 'admin-collections' }">Bộ sưu tập</RouterLink>
+          <RouterLink :to="{ name: 'admin-dealers' }">Đại lý</RouterLink>
           <RouterLink :to="{ name: 'admin-settings' }">Giá cộng thêm & liên hệ</RouterLink>
         </nav>
       </div>
