@@ -4,6 +4,8 @@ import { adminApi } from '../../api'
 import { money, thumb } from '../../utils'
 import AdminModal from '../../components/admin/AdminModal.vue'
 import ProductImages from '../../components/admin/ProductImages.vue'
+import { confirmDialog, alertDialog } from '../../composables/useDialog'
+import ImportWizard from '../../components/admin/ImportWizard.vue'
 import { loadCatalog } from '../../composables/useCatalog'
 
 const products = ref([])
@@ -39,6 +41,21 @@ async function load() {
   }
 }
 onMounted(load)
+
+// ---- Excel import / export ----
+const importing = ref(false)
+const exporting = ref(false)
+async function exportExcel() {
+  exporting.value = true
+  loadError.value = ''
+  try {
+    await adminApi.exportProducts()
+  } catch (err) {
+    loadError.value = err.message
+  } finally {
+    exporting.value = false
+  }
+}
 
 // ---- Edit dialog ----
 const editing = ref(null) // form object while the dialog is open
@@ -129,7 +146,7 @@ async function saveBulk() {
     const { updated } = await adminApi.bulkPrice(visible.value.map((p) => p.id), bulk.value.price)
     bulk.value = null
     await load()
-    window.alert(`Đã cập nhật giá cho ${updated} sản phẩm`)
+    alertDialog(`Đã cập nhật giá cho ${updated} sản phẩm.`, { title: 'Đã đặt giá', tone: 'success' })
   } catch (err) {
     bulkError.value = err.message
   }
@@ -140,17 +157,54 @@ async function toggle(p, field) {
     await adminApi.update('products', p.id, { [field]: !p[field] })
     p[field] = p[field] ? 0 : 1
   } catch (err) {
-    window.alert(err.message)
+    alertDialog(err.message, { title: 'Có lỗi', tone: 'error' })
   }
 }
 
-async function remove(p) {
-  if (!window.confirm(`Xoá sản phẩm "${p.code || p.name}"?`)) return
+function remove(p) {
+  removeMany([p])
+}
+
+// ---- Selection (checkboxes) – applies to the rows currently shown by the filters ----
+const selected = ref([]) // product ids
+let lastIndex = -1
+const isSelected = (p) => selected.value.includes(p.id)
+const selectedVisible = computed(() => visible.value.filter(isSelected))
+const allSelected = computed(() => visible.value.length > 0 && selectedVisible.value.length === visible.value.length)
+const someSelected = computed(() => selectedVisible.value.length > 0 && !allSelected.value)
+function toggleAll() {
+  const ids = new Set(selected.value)
+  const on = !allSelected.value
+  for (const p of visible.value) on ? ids.add(p.id) : ids.delete(p.id)
+  selected.value = [...ids]
+}
+function toggleRow(e, p, index) {
+  const on = !isSelected(p)
+  const rows = e.shiftKey && lastIndex >= 0 ? visible.value.slice(Math.min(lastIndex, index), Math.max(lastIndex, index) + 1) : [p]
+  const ids = new Set(selected.value)
+  for (const x of rows) on ? ids.add(x.id) : ids.delete(x.id)
+  selected.value = [...ids]
+  lastIndex = index
+}
+
+async function removeMany(items) {
+  if (!items.length) return
+  const one = items.length === 1
+  const ok = await confirmDialog({
+    title: one ? `Xoá sản phẩm "${items[0].code || items[0].name}"?` : `Xoá ${items.length} sản phẩm?`,
+    message: one ? `${items[0].name} sẽ bị xoá khỏi web cùng toàn bộ ảnh.` : 'Các sản phẩm sau sẽ bị xoá khỏi web cùng toàn bộ ảnh:',
+    items: one ? [] : items.map((p) => (p.code ? `${p.code} – ${p.name}` : p.name)),
+    note: 'Thao tác này không hoàn tác được. Muốn tạm ẩn thì bấm cột "Hiển thị".',
+    okText: one ? 'Xoá' : `Xoá ${items.length} sản phẩm`,
+  })
+  if (!ok) return
   try {
-    await adminApi.remove('products', p.id)
+    await adminApi.bulkDelete('products', items.map((p) => p.id))
+    const gone = new Set(items.map((p) => p.id))
+    selected.value = selected.value.filter((id) => !gone.has(id))
     await load()
   } catch (err) {
-    window.alert(err.message)
+    alertDialog(err.message, { title: 'Không xoá được', tone: 'error' })
   }
 }
 
@@ -181,24 +235,44 @@ function rowDblClick(e, item) {
         <option value="featured">Bán chạy</option>
         <option value="hidden">Đang ẩn</option>
       </select>
+      <template v-if="selectedVisible.length">
+        <span class="sel-count">Đã chọn <b>{{ selectedVisible.length }}</b></span>
+        <button class="ghost" @click="selected = []">Bỏ chọn</button>
+        <button class="danger-solid" @click="removeMany(selectedVisible)">Xoá {{ selectedVisible.length }} sản phẩm</button>
+      </template>
       <button class="ghost" :disabled="!visible.length" @click="openBulk">Đặt giá {{ visible.length }} mẫu đang lọc</button>
+      <button class="ghost" :disabled="exporting" @click="exportExcel">{{ exporting ? 'Đang xuất…' : '⬇ Xuất Excel' }}</button>
+      <button class="ghost" @click="importing = true">⬆ Nhập Excel</button>
       <button @click="openNew">+ Thêm sản phẩm</button>
     </div>
   </div>
   <p class="hint">
-    <b>Nháy đúp vào dòng</b> (hoặc bấm <b>Sửa</b>) để đổi giá, ảnh, tên, mã của từng mẫu. Muốn đổi giá cả nhóm: lọc theo bộ sưu tập / dòng phụ rồi bấm <b>Đặt giá … mẫu đang lọc</b>.
-    Ô giá để trống → dùng <b>giá chung</b> của bộ sưu tập.
+    Tích ô đầu dòng để <b>xoá nhiều mẫu</b> (giữ Shift để chọn một dải). <b>Nháy đúp vào dòng</b> (hoặc bấm <b>Sửa</b>) để đổi giá, ảnh, tên, mã của từng mẫu. Muốn đổi giá cả nhóm: lọc theo bộ sưu tập / dòng phụ rồi bấm <b>Đặt giá … mẫu đang lọc</b>.
+    Ô giá để trống → dùng <b>giá chung</b> của bộ sưu tập. Sửa hàng loạt: <b>Xuất Excel</b> → sửa → <b>Nhập Excel</b>.
   </p>
   <p v-if="loadError" class="error">{{ loadError }}</p>
 
   <table>
     <thead>
       <tr>
+        <th class="sel">
+          <input type="checkbox" title="Chọn tất cả mẫu đang lọc" :checked="allSelected" :indeterminate="someSelected" @change="toggleAll" />
+        </th>
         <th>Ảnh</th><th>Mã</th><th>Bộ sưu tập</th><th>Giá</th><th>Giá KM</th><th>Bán chạy</th><th>Hiển thị</th><th></th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="p in visible" :key="p.id" class="row-edit" title="Nháy đúp để sửa" @dblclick="rowDblClick($event, p)">
+      <tr
+        v-for="(p, i) in visible"
+        :key="p.id"
+        class="row-edit"
+        :class="{ selected: isSelected(p) }"
+        title="Nháy đúp để sửa"
+        @dblclick="rowDblClick($event, p)"
+      >
+        <td class="sel" @click.self="toggleRow($event, p, i)">
+          <input type="checkbox" :checked="isSelected(p)" @click="toggleRow($event, p, i)" />
+        </td>
         <td>
           <span class="thumb-wrap">
             <img v-if="p.image_url" :src="thumb(p.image_url)" alt="" />
@@ -229,7 +303,7 @@ function rowDblClick(e, item) {
         </td>
       </tr>
       <tr v-if="!visible.length">
-        <td colspan="8" class="sub">Không có sản phẩm phù hợp.</td>
+        <td colspan="9" class="sub">Không có sản phẩm phù hợp.</td>
       </tr>
     </tbody>
   </table>
@@ -299,4 +373,6 @@ function rowDblClick(e, item) {
       </div>
     </form>
   </AdminModal>
+
+  <ImportWizard v-if="importing" @close="importing = false" @done="load" />
 </template>

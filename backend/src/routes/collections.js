@@ -2,6 +2,7 @@ const express = require('express');
 const { pool } = require('../db');
 const requireAdmin = require('../middleware/auth');
 const { toMoney, toInt, str, slugify, asyncH } = require('../util');
+const { deleteFiles } = require('./resources');
 
 function parseCollection(body, partial = false) {
   const errors = [];
@@ -122,6 +123,50 @@ adminRouter.put(
     } catch (err) {
       if (!dupSlug(err, res)) throw err;
     }
+  })
+);
+
+// POST /api/admin/collections/bulk-delete  { ids: [...], withProducts: bool }
+// Without withProducts, collections that still have products are skipped (and reported).
+adminRouter.post(
+  '/bulk-delete',
+  asyncH(async (req, res) => {
+    const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map(Number).filter((n) => n > 0))];
+    if (!ids.length) return res.status(400).json({ error: 'Chưa chọn bộ sưu tập nào' });
+    const withProducts = !!req.body?.withProducts;
+    const [counts] = await pool.query(
+      `SELECT c.id, c.name, COUNT(p.id) AS n FROM collections c LEFT JOIN products p ON p.collection_id = c.id
+       WHERE c.id IN (?) GROUP BY c.id, c.name`,
+      [ids]
+    );
+    const skipped = withProducts ? [] : counts.filter((c) => c.n > 0).map((c) => ({ id: c.id, name: c.name, products: Number(c.n) }));
+    const del = counts.filter((c) => withProducts || !(c.n > 0)).map((c) => c.id);
+    let files = [];
+    let products = 0;
+    if (del.length) {
+      const conn = await pool.getConnection();
+      try {
+        await conn.beginTransaction();
+        if (withProducts) {
+          const [f] = await conn.query(
+            'SELECT r.file_name FROM resources r JOIN products p ON p.id = r.product_id WHERE p.collection_id IN (?)',
+            [del]
+          );
+          files = f.map((x) => x.file_name);
+          const [r] = await conn.query('DELETE FROM products WHERE collection_id IN (?)', [del]); // resources cascade
+          products = r.affectedRows;
+        }
+        await conn.query('DELETE FROM collections WHERE id IN (?)', [del]);
+        await conn.commit();
+      } catch (err) {
+        await conn.rollback().catch(() => {});
+        throw err;
+      } finally {
+        conn.release();
+      }
+      await deleteFiles(files);
+    }
+    res.json({ deleted: del.length, products, skipped });
   })
 );
 

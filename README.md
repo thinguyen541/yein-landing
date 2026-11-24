@@ -121,6 +121,9 @@ lúc 03:00 vào `/root/yein-backups` (giữ 7 ngày). Cuối cùng in ra link we
 
 Cập nhật code mới: `cd yein-landing && bash scripts/deploy-vps.sh` (tự `git pull` rồi build lại).
 
+**Release 1 lệnh từ máy Windows:** `scripts\release.bat "nội dung thay đổi"` – commit + push lên GitHub,
+SSH vào VPS, backup database rồi chạy `deploy-vps.sh`. Chỉ hỏi mật khẩu root VPS.
+
 ### HTTPS (SSL miễn phí)
 
 1. Ở trang quản lý tên miền, tạo 2 bản ghi **A**: `@` → IP VPS và `www` → IP VPS. Chờ DNS cập nhật (5 phút – vài giờ).
@@ -147,6 +150,24 @@ Backup (MySQL trong Docker):
 docker compose exec db sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" yein' > backup.sql
 ```
 
+## Nhập / xuất Excel (trang Admin → Sản phẩm)
+
+- **⬇ Xuất Excel**: tải toàn bộ sản phẩm ra `.xlsx` (sheet *Sản phẩm* + sheet *Hướng dẫn* liệt kê bộ sưu tập).
+  Cột *Ảnh* chứa link ảnh hiện tại → sửa giá rồi nhập lại thì ảnh vẫn giữ nguyên.
+- **⬆ Nhập Excel** – 3 bước:
+  1. **Tải file**: chọn file `.xlsx`/`.csv` và (nếu có) ảnh – chọn nhiều ảnh hoặc cả thư mục, hoặc kéo thả.
+  2. **Xem trước**: từng dòng *Thêm mới / Cập nhật / Không đổi / Lỗi*, giá cũ → mới, ảnh nào khớp, ảnh nào thiếu. Chưa ghi gì vào DB.
+  3. **Hoàn thành**: tải các ảnh cần dùng lên (có thanh tiến độ, ảnh > 8MB tự thu nhỏ), ghi vào DB, báo kết quả. Dòng lỗi được bỏ qua.
+- Khớp sản phẩm theo **Mã kính**: mã đã có → cập nhật, mã mới → thêm (cần Tên + Bộ sưu tập). Cột *Bộ sưu tập* xuất và nhập theo **tên** (không phân biệt hoa/thường, phải đúng dấu); tên chưa có → **tự tạo mới** (xem trước sẽ báo). Ô trống = giữ nguyên, `-` = xoá giá trị.
+  Tiêu đề cột nhận cả tiếng Việt lẫn tiếng Anh (`Mã kính`/`code`, `Giá`/`price`, `Ảnh`/`images`…) và có thể nằm ở dòng 1–15.
+- **Ảnh** (ưu tiên từ trên xuống):
+  1. Tự ghép theo tên file: `F3714.jpg`, `F3714-2.jpg`, `F3714_3.png`… khi cột *Ảnh* để trống → thay ảnh của F3714.
+  2. Cột *Ảnh*: tên file đã chọn, link `https://…` (máy chủ tự tải), hoặc `/resources/…` (ảnh đang có); nhiều ảnh cách nhau `|`.
+  3. Cột *Ảnh* trống và không có ảnh trùng mã → giữ ảnh cũ. Ghi `-` → xoá hết ảnh.
+- File `.xls` (Excel 97-2003) chưa hỗ trợ: mở bằng Excel và *Lưu thành* `.xlsx`. Tối đa 5000 dòng / lần, file ≤ 10MB.
+- Code: `backend/src/lib/xlsx.js` (đọc/ghi xlsx, không cần thư viện), `backend/src/lib/productImport.js` (phân tích),
+  `backend/src/routes/importExport.js` (API), `frontend/src/components/admin/ImportWizard.vue` (giao diện).
+
 ## API
 
 | Method | Path | Auth | Mô tả |
@@ -164,8 +185,14 @@ docker compose exec db sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" yein' > 
 | POST | `/api/admin/resources` | Bearer | `{data: "data:image/...;base64,...", name}` → `{id, url}` (lưu file vào `backend/resources`) |
 | DELETE | `/api/admin/resources/:id` | Bearer | Xoá ảnh |
 | PUT | `/api/admin/products/bulk-price` | Bearer | `{ids: [...], price}` – đặt giá nhiều mẫu |
+| POST | `/api/admin/products/bulk-delete` | Bearer | `{ids: [...]}` – xoá nhiều sản phẩm (kèm ảnh) |
+| POST | `/api/admin/collections/bulk-delete` | Bearer | `{ids: [...], withProducts}` – xoá nhiều bộ sưu tập; không có `withProducts` thì bỏ qua bộ còn sản phẩm |
 | GET/POST/PUT/DELETE | `/api/admin/collections[/:id]` | Bearer | Quản lý bộ sưu tập |
 | PUT | `/api/admin/settings` | Bearer | Lưu thông tin liên hệ |
+| GET | `/api/admin/import-export/export` | Bearer | Tải file `.xlsx` toàn bộ sản phẩm |
+| GET | `/api/admin/import-export/template` | Bearer | Tải file mẫu |
+| POST | `/api/admin/import-export/preview` | Bearer | `{fileName, data (base64), imageNames}` → kết quả xem trước từng dòng |
+| POST | `/api/admin/import-export/commit` | Bearer | `{fileName, data, uploaded: {"F3714.jpg": resourceId}}` → `{created, updated, unchanged, skipped, errors}` |
 
 Sản phẩm: `code`, `name`, `series`, `collection_id`, `description`, `price` (trống = giá chung), `sale_price`, `image_ids`,
 `is_featured`, `is_active`, `sort_order`. Trả về kèm `images` (danh sách ảnh) và `image_url` (ảnh chính).

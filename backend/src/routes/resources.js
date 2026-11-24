@@ -15,27 +15,47 @@ const urlOf = (fileName) => `/resources/${fileName}`;
 
 const toDto = (r) => ({ id: r.id, url: urlOf(r.file_name), name: r.original_name, sort_order: r.sort_order });
 
+function httpError(message, status = 400) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
+}
+
+/** Save an image buffer as a new, unattached resource. */
+async function saveBuffer(buf, mime, originalName) {
+  if (!TYPES[mime]) throw httpError('Chỉ nhận ảnh JPG, PNG hoặc WEBP');
+  if (buf.length > MAX_BYTES) throw httpError('Ảnh tối đa 8MB');
+  await fs.mkdir(RESOURCE_DIR, { recursive: true });
+  const fileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${TYPES[mime]}`;
+  await fs.writeFile(path.join(RESOURCE_DIR, fileName), buf);
+  const [r] = await pool.query('INSERT INTO resources SET ?', [
+    { file_name: fileName, original_name: originalName ? String(originalName).slice(0, 255) : null, mime, size: buf.length },
+  ]);
+  return { id: r.insertId, url: urlOf(fileName), name: originalName || null, sort_order: 0 };
+}
+
 /** Save a data URL ("data:image/jpeg;base64,...") as a new, unattached resource. */
 async function saveDataUrl(dataUrl, originalName) {
   const m = /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/s.exec(String(dataUrl || ''));
-  if (!m) {
-    const err = new Error('Chỉ nhận ảnh JPG, PNG hoặc WEBP');
-    err.status = 400;
-    throw err;
+  if (!m) throw httpError('Chỉ nhận ảnh JPG, PNG hoặc WEBP');
+  return saveBuffer(Buffer.from(m[2], 'base64'), m[1], originalName);
+}
+
+/** Download an image from an http(s) URL and save it as a resource. */
+async function downloadImage(url) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, redirect: 'follow' });
+    if (!res.ok) throw httpError(`Không tải được ảnh (${res.status})`);
+    let mime = String(res.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+    if (mime === 'image/jpg') mime = 'image/jpeg';
+    if (!TYPES[mime]) throw httpError('Link không phải ảnh JPG/PNG/WEBP');
+    const buf = Buffer.from(await res.arrayBuffer());
+    return await saveBuffer(buf, mime, decodeURIComponent(new URL(url).pathname.split('/').pop() || 'image'));
+  } finally {
+    clearTimeout(timer);
   }
-  const buf = Buffer.from(m[2], 'base64');
-  if (buf.length > MAX_BYTES) {
-    const err = new Error('Ảnh tối đa 8MB');
-    err.status = 400;
-    throw err;
-  }
-  await fs.mkdir(RESOURCE_DIR, { recursive: true });
-  const fileName = `${Date.now()}-${crypto.randomBytes(6).toString('hex')}.${TYPES[m[1]]}`;
-  await fs.writeFile(path.join(RESOURCE_DIR, fileName), buf);
-  const [r] = await pool.query('INSERT INTO resources SET ?', [
-    { file_name: fileName, original_name: originalName ? String(originalName).slice(0, 255) : null, mime: m[1], size: buf.length },
-  ]);
-  return { id: r.insertId, url: urlOf(fileName), name: originalName || null, sort_order: 0 };
 }
 
 async function deleteFiles(fileNames) {
@@ -129,4 +149,4 @@ router.delete(
   })
 );
 
-module.exports = { router, RESOURCE_DIR, urlOf, attachImages, imagesByProduct, deleteFiles, cleanupOrphans };
+module.exports = { router, RESOURCE_DIR, urlOf, attachImages, imagesByProduct, deleteFiles, cleanupOrphans, saveBuffer, downloadImage };

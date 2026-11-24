@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { adminApi } from '../../api'
+import { confirmDialog, alertDialog } from '../../composables/useDialog'
 import AdminModal from '../../components/admin/AdminModal.vue'
 
 const dealers = ref([])
@@ -68,17 +69,24 @@ async function toggle(d) {
     await adminApi.update('dealers', d.id, { is_active: !d.is_active })
     d.is_active = d.is_active ? 0 : 1
   } catch (err) {
-    window.alert(err.message)
+    alertDialog(err.message, { title: 'Có lỗi', tone: 'error' })
   }
 }
 
 async function remove(d) {
-  if (!window.confirm(`Xoá đại lý "${d.name}"?`)) return
+  if (
+    !(await confirmDialog({
+      title: 'Xoá đại lý?',
+      message: `Đại lý "${d.name}" sẽ bị xoá khỏi danh sách đối tác trên web.`,
+      note: 'Thao tác này không hoàn tác được.',
+    }))
+  )
+    return
   try {
     await adminApi.remove('dealers', d.id)
     await load()
   } catch (err) {
-    window.alert(err.message)
+    alertDialog(err.message, { title: 'Có lỗi', tone: 'error' })
   }
 }
 

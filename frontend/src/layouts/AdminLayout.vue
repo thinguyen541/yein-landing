@@ -4,6 +4,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { auth, clearSession } from '../auth'
 import { api } from '../api'
 import AdminModal from '../components/admin/AdminModal.vue'
+import ConfirmHost from '../components/admin/ConfirmHost.vue'
+import { alertDialog } from '../composables/useDialog'
 import '../styles/admin.css'
 
 const router = useRouter()
@@ -74,7 +76,7 @@ async function savePassword() {
       body: { currentPassword: pw.currentPassword, newPassword: pw.newPassword },
     })
     pwOpen.value = false
-    window.alert('Đã đổi mật khẩu')
+    alertDialog('Mật khẩu mới đã được lưu.', { title: 'Đã đổi mật khẩu', tone: 'success' })
   } catch (err) {
     pw.error = err.message
   }
@@ -116,5 +118,7 @@ async function savePassword() {
         </div>
       </form>
     </AdminModal>
+
+    <ConfirmHost />
   </div>
 </template>

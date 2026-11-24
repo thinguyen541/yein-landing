@@ -10,6 +10,7 @@ const collections = require('./routes/collections');
 const settings = require('./routes/settings');
 const dealers = require('./routes/dealers');
 const resources = require('./routes/resources');
+const importExport = require('./routes/importExport');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -18,6 +19,7 @@ app.use(cors({ origin: config.corsOrigin === '*' ? true : config.corsOrigin.spli
 // Image upload routes have their own larger body limit, so mount them before the global JSON parser
 app.use('/api/admin/resources', resources.router);
 app.use('/api/admin/upload', resources.router); // old path, same handler
+app.use('/api/admin/import-export', importExport); // Excel import/export (own 25mb JSON parser)
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));

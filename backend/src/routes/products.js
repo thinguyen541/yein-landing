@@ -213,6 +213,19 @@ adminRouter.put(
   })
 );
 
+// POST /api/admin/products/bulk-delete  { ids: [...] }
+adminRouter.post(
+  '/bulk-delete',
+  asyncH(async (req, res) => {
+    const ids = [...new Set((Array.isArray(req.body?.ids) ? req.body.ids : []).map(Number).filter((n) => n > 0))];
+    if (!ids.length) return res.status(400).json({ error: 'Chưa chọn sản phẩm nào' });
+    const [files] = await pool.query('SELECT file_name FROM resources WHERE product_id IN (?)', [ids]);
+    const [r] = await pool.query('DELETE FROM products WHERE id IN (?)', [ids]); // resources rows cascade
+    await deleteFiles(files.map((f) => f.file_name));
+    res.json({ deleted: r.affectedRows });
+  })
+);
+
 adminRouter.delete(
   '/:id',
   asyncH(async (req, res) => {
