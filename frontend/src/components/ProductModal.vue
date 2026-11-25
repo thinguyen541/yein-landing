@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { stopSmooth, startSmooth } from '../composables/smooth'
 import PriceTag from './PriceTag.vue'
 import ZaloLink from './ZaloLink.vue'
 import { useSettings } from '../composables/useSettings'
@@ -27,6 +28,7 @@ onMounted(() => document.addEventListener('keydown', onKey))
 onBeforeUnmount(() => {
   document.removeEventListener('keydown', onKey)
   document.body.style.overflow = ''
+  startSmooth()
 })
 
 // Lock page scroll while open
@@ -34,6 +36,7 @@ watch(
   () => props.product,
   (p) => {
     document.body.style.overflow = p ? 'hidden' : ''
+    p ? stopSmooth() : startSmooth() // the page must not scroll behind the popup
     active.value = 0
   }
 )
@@ -41,7 +44,7 @@ watch(
 
 <template>
   <Transition name="fade">
-    <div v-if="product" class="modal" role="dialog" aria-modal="true" @click.self="emit('close')">
+    <div v-if="product" class="modal" data-lenis-prevent role="dialog" aria-modal="true" @click.self="emit('close')">
       <div class="modal-box">
         <button class="modal-close" aria-label="Đóng" @click="emit('close')">×</button>
         <div class="modal-img">

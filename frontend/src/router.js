@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { auth, clearSession } from './auth'
 import { api } from './api'
+import { getLenis, scrollTo } from './composables/smooth'
 
 import SiteLayout from './layouts/SiteLayout.vue'
 import HomePage from './pages/HomePage.vue'
@@ -37,18 +38,37 @@ const routes = [
   },
 ]
 
+// Let the app (not the browser) decide the scroll position after a reload
+if (typeof history !== 'undefined' && 'scrollRestoration' in history) history.scrollRestoration = 'manual'
+
 const router = createRouter({
   history: createWebHistory(),
   routes,
   scrollBehavior(to, from, saved) {
+    const lenis = getLenis()
+    // First load / F5: always start at the top (no browser scroll restore, no jump to an old #hash)
+    if (!from.matched.length) {
+      if (to.hash) history.replaceState(history.state, '', to.fullPath.replace(/#.*$/, ''))
+      lenis?.scrollTo(0, { immediate: true, force: true })
+      return { top: 0 }
+    }
     if (saved) return saved
     // Switching collection tabs inside the catalogue keeps the scroll position
     if (['products', 'collection'].includes(to.name) && ['products', 'collection'].includes(from.name)) return false
     if (to.hash) {
-      // Give the target page time to render before scrolling to the section
-      const delay = to.path === from.path ? 0 : 350
-      return new Promise((resolve) => setTimeout(() => resolve({ el: to.hash, top: 80, behavior: 'smooth' }), delay))
+      // Give the target page time to render, then glide to the section
+      const delay = to.path === from.path ? 0 : 450
+      if (to.path !== from.path) lenis?.scrollTo(0, { immediate: true, force: true })
+      // wait until the section exists (home sections render after the catalogue loads)
+      const t0 = Date.now()
+      const go = () => {
+        if (document.querySelector(to.hash) || Date.now() - t0 > 3000) scrollTo(to.hash)
+        else setTimeout(go, 100)
+      }
+      setTimeout(go, delay)
+      return to.path === from.path ? false : { top: 0 }
     }
+    lenis?.scrollTo(0, { immediate: true, force: true })
     return { top: 0 }
   },
 })

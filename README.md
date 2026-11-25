@@ -150,6 +150,13 @@ Backup (MySQL trong Docker):
 docker compose exec db sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" yein' > backup.sql
 ```
 
+## Trang chủ (luxury)
+
+Bố cục và hiệu ứng theo bản demo khách duyệt: màn hình chờ *Y E I N*, hero dính phóng ảnh theo cuộn, cuộn mượt
+([Lenis](https://github.com/darkroomengineering/lenis) – `npm install` sau khi kéo code), ảnh hiện dần / parallax
+(`v-reveal`, `v-parallax`), dải chữ chạy, sản phẩm cuộn ngang được ghim (giá lấy từ admin), các khối câu chuyện từng dòng,
+thẻ công nghệ xếp chồng. Code: `frontend/src/components/home/`, nội dung: `src/data/stories.js`, `src/data/banners.js`.
+
 ## Nhập / xuất Excel (trang Admin → Sản phẩm)
 
 - **⬇ Xuất Excel**: tải toàn bộ sản phẩm ra `.xlsx` (sheet *Sản phẩm* + sheet *Hướng dẫn* liệt kê bộ sưu tập).

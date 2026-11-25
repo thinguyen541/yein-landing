@@ -1,7 +1,15 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ZaloLink from './ZaloLink.vue'
+import { onFrame, scrollTo } from '../composables/smooth'
+
+// overlay: transparent header on top of the home hero, turns solid once you scroll
+const props = defineProps({ overlay: { type: Boolean, default: false } })
+const scrolled = ref(false)
+let off
+onMounted(() => (off = onFrame((y) => (scrolled.value = y > window.innerHeight * 0.75))))
+onBeforeUnmount(() => off?.())
 
 const route = useRoute()
 const router = useRouter()
@@ -25,10 +33,10 @@ function go(l) {
   open.value = false
   const samePage = !l.path || l.path === route.path
   if (samePage && l.hash) {
-    document.querySelector(l.hash)?.scrollIntoView({ behavior: 'smooth' })
+    scrollTo(l.hash)
     history.replaceState(history.state, '', l.hash)
   } else if (samePage) {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    scrollTo(0, { offset: 0 })
   } else {
     router.push({ path: l.path, hash: l.hash })
   }
@@ -36,7 +44,7 @@ function go(l) {
 </script>
 
 <template>
-  <header class="site-header">
+  <header class="site-header" :class="{ 'is-overlay': props.overlay && !scrolled && !open }">
     <div class="wrap">
       <RouterLink to="/" class="logo">YEIN</RouterLink>
       <nav class="main-nav" :class="{ open }">
