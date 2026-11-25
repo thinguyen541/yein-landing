@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
-import { aboutText, stats, history, honors, processes, designer, craftText } from '../data/about'
+import { aboutText, stats, history, honors, designer } from '../data/about'
 
 const formatStat = (s) => new Intl.NumberFormat('vi-VN').format(s.value) + s.suffix
 
@@ -9,7 +9,6 @@ const nav = [
   { id: 'nha-thiet-ke', label: 'Nhà thiết kế' },
   { id: 'lich-su', label: 'Lịch sử' },
   { id: 'giai-thuong', label: 'Giải thưởng' },
-  { id: 'cong-nghe', label: 'Tâm huyết & công nghệ' },
   { id: 'trung-bay', label: 'Hệ thống trưng bày' },
 ]
 
@@ -22,7 +21,7 @@ onMounted(() => (document.title = 'Về YEIN – Kính không viền cắt cạn
       <div class="crumbs"><RouterLink to="/">Trang chủ</RouterLink> / <span>Về YEIN</span></div>
       <p class="eyebrow" style="color: var(--gold-light)">About us</p>
       <h1>Kính không viền,<br />tôi yêu YEIN hơn</h1>
-      <p class="desc">Câu chuyện thương hiệu, nhà thiết kế, lịch sử, giải thưởng và công nghệ chế tác của YEIN.</p>
+      <p class="desc">Câu chuyện thương hiệu, nhà thiết kế, lịch sử và giải thưởng của YEIN.</p>
     </div>
     <div class="banner-media"><img :src="'/img/cover.webp'" alt="" /></div>
   </section>
@@ -101,27 +100,6 @@ onMounted(() => (document.title = 'Về YEIN – Kính không viền cắt cạn
           <span>{{ h }}</span>
         </li>
       </ul>
-    </div>
-  </section>
-
-  <!-- Craft + technology -->
-  <section id="cong-nghe" class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow">Tâm huyết nghệ nhân · Công nghệ chế tác</p>
-          <h2 class="display">Kiến tạo vẻ đẹp nghệ thuật</h2>
-          <p class="lead">{{ craftText }}</p>
-        </div>
-      </div>
-      <div class="process-grid">
-        <article v-for="p in processes" :key="p.title" class="process-card">
-          <div class="media"><img :src="p.img" :alt="p.title" loading="lazy" /></div>
-          <h3>{{ p.title }}</h3>
-          <p class="sub">{{ p.sub }}</p>
-          <p>{{ p.text }}</p>
-        </article>
-      </div>
     </div>
   </section>
 

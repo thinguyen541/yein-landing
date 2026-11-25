@@ -12,7 +12,7 @@ const links = [
   { label: 'Về YEIN', path: '/ve-yein' },
   { label: 'Bộ sưu tập', path: '/', hash: '#bo-suu-tap' },
   { label: 'Sản phẩm', path: '/san-pham' },
-  { label: 'Công nghệ', path: '/ve-yein', hash: '#cong-nghe' },
+  { label: 'Công nghệ', path: '/', hash: '#cong-nghe' },
   { label: 'Đại lý', path: '/', hash: '#dai-ly' },
   { label: 'Liên hệ', hash: '#lien-he' }, // footer, present on every page
 ]
