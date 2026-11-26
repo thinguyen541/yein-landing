@@ -1,13 +1,14 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useCatalog } from '../composables/useCatalog'
-import { money, effectivePrice } from '../utils'
+import { money, effectivePrice, onSale } from '../utils'
 import ProductCard from '../components/ProductCard.vue'
 import ProductModal from '../components/ProductModal.vue'
 
 // Used for both /san-pham (all products) and /bo-suu-tap/:slug (one collection)
 const route = useRoute()
+const router = useRouter()
 const { products, collections, loaded, error } = useCatalog()
 
 const PAGE = 24
@@ -30,13 +31,42 @@ const seriesList = computed(() => {
   return [...m.entries()].map(([name, count]) => ({ name, count }))
 })
 
+// Label + price filters live in the URL (?tag=hot|best|new|sale&price=under-10|10-20|over-20),
+// so the header mega menu can link straight to them
+const TAGS = [
+  { key: 'hot', label: 'Mẫu hot', test: (p) => !!p.is_hot },
+  { key: 'best', label: 'Bán chạy', test: (p) => !!p.is_featured },
+  { key: 'new', label: 'Hàng mới', test: (p) => !!p.is_new },
+  { key: 'sale', label: 'Ưu đãi', test: (p) => onSale(p) },
+]
+const PRICES = {
+  'under-10': { label: 'Dưới 10 triệu', test: (v) => v < 10e6 },
+  '10-20': { label: '10 – 20 triệu', test: (v) => v >= 10e6 && v <= 20e6 },
+  'over-20': { label: 'Trên 20 triệu', test: (v) => v > 20e6 },
+}
+const tag = computed(() => String(route.query.tag || ''))
+const price = computed(() => String(route.query.price || ''))
+const tagCounts = computed(() => Object.fromEntries(TAGS.map((t) => [t.key, inScope.value.filter(t.test).length])))
+// "Hàng mới" with nothing flagged yet -> newest models first
+const newFallback = computed(() => tag.value === 'new' && !tagCounts.value.new)
+function setQuery(patch) {
+  const q = { ...route.query, ...patch }
+  for (const k of Object.keys(q)) if (!q[k]) delete q[k]
+  router.replace({ query: q })
+}
+
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
+  const t = TAGS.find((x) => x.key === tag.value)
+  const pr = PRICES[price.value]
   let list = inScope.value.filter(
     (p) =>
       (!series.value || p.series === series.value) &&
+      (!t || newFallback.value || t.test(p)) &&
+      (!pr || (effectivePrice(p) != null && pr.test(Number(effectivePrice(p))))) &&
       (!q || `${p.code || ''} ${p.name} ${p.series || ''}`.toLowerCase().includes(q))
   )
+  if (newFallback.value || sort.value === 'newest') list = [...list].sort((a, b) => b.id - a.id)
   if (sort.value === 'price-asc') list = [...list].sort((a, b) => (effectivePrice(a) ?? Infinity) - (effectivePrice(b) ?? Infinity))
   if (sort.value === 'price-desc') list = [...list].sort((a, b) => (effectivePrice(b) ?? -1) - (effectivePrice(a) ?? -1))
   return list
@@ -55,7 +85,7 @@ watch(slug, () => {
   search.value = ''
   limit.value = PAGE
 })
-watch([search, sort, series], () => (limit.value = PAGE))
+watch([search, sort, series, tag, price], () => (limit.value = PAGE))
 watch(
   current,
   (c) => (document.title = c ? `${c.name} – YEIN` : 'Sản phẩm – YEIN'),
@@ -117,8 +147,23 @@ watch(
               <option value="">Mặc định</option>
               <option value="price-asc">Giá tăng dần</option>
               <option value="price-desc">Giá giảm dần</option>
+              <option value="newest">Mới nhất</option>
             </select>
           </div>
+        </div>
+        <div class="chips sub-chips tag-chips">
+          <button class="chip" :class="{ active: !tag }" @click="setQuery({ tag: '' })">Tất cả mẫu</button>
+          <template v-for="t in TAGS" :key="t.key">
+            <button
+              v-if="tagCounts[t.key] || t.key === 'new'"
+              class="chip"
+              :class="[`chip--${t.key}`, { active: tag === t.key }]"
+              @click="setQuery({ tag: tag === t.key ? '' : t.key })"
+            >{{ t.label }} <small v-if="tagCounts[t.key]">{{ tagCounts[t.key] }}</small></button>
+          </template>
+          <button v-if="PRICES[price]" class="chip active" title="Bỏ lọc giá" @click="setQuery({ price: '' })">
+            {{ PRICES[price].label }} ×
+          </button>
         </div>
         <div v-if="seriesList.length > 1" class="chips sub-chips">
           <button class="chip" :class="{ active: !series }" @click="series = ''">Tất cả dòng</button>
