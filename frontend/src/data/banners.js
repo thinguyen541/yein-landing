@@ -21,7 +21,7 @@ export const heroSlides = [
     eyebrow: 'Thanh lịch mỗi ngày',
     title: 'Nhẹ như<br /><em>không đeo kính</em>',
     text: 'Gọng mảnh, ôm nhẹ khuôn mặt – hợp cả công sở lẫn dạo phố.',
-    cta: { label: 'Khám phá bộ sưu tập', to: '/#bo-suu-tap' },
+    cta: { label: 'Khám phá bộ sưu tập', to: '/bo-suu-tap' },
   },
   {
     img: '/img/banners/banner-mint.webp',

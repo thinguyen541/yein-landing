@@ -3,18 +3,36 @@ import { computed } from 'vue'
 import { money, thumb } from '../../utils'
 
 // The three product lines as tall image cards (id "bo-suu-tap" is the menu target)
-const props = defineProps({ collections: { type: Array, default: () => [] } })
+const props = defineProps({
+  collections: { type: Array, default: () => [] },
+  limit: { type: Number, default: 0 }, // 0 = all
+  showHead: { type: Boolean, default: true },
+  sectionId: { type: String, default: 'bo-suu-tap' },
+})
 
 const FALLBACK = ['/img/h-pink-wide.webp', '/img/f-woman.webp', '/img/y-woman.webp']
+// Focus points for the built-in photos (cards are portrait, photos are landscape)
+const FOCUS = {
+  'solenskiner.webp': '60% center',
+  'f-teal.webp': '42% center',
+  'y-mint.webp': '35% center',
+  'f-woman.webp': '30% center',
+  'y-woman.webp': '70% center',
+  'h-pink-wide.webp': '50% center',
+}
+const focusOf = (url) => FOCUS[String(url || '').split('/').pop()] || 'center'
 const letterOf = (c) => {
   const n = String(c.name || '').replace(/^Dòng\s+/i, '').trim()
   return (n[0] || 'Y').toUpperCase()
 }
+const list = computed(() => (props.limit ? props.collections.slice(0, props.limit) : props.collections))
+const hasMore = computed(() => props.limit > 0 && props.collections.length > props.limit)
 const items = computed(() =>
-  props.collections.map((c, i) => ({
+  list.value.map((c, i) => ({
     ...c,
     letter: letterOf(c),
     img: c.cover_image ? thumb(c.cover_image) : FALLBACK[i % FALLBACK.length],
+    focus: focusOf(c.cover_image || FALLBACK[i % FALLBACK.length]),
     price:
       c.min_price == null ? '' : c.min_price === c.max_price ? money(c.min_price) : `Từ ${money(c.min_price)}`,
   }))
@@ -22,8 +40,8 @@ const items = computed(() =>
 </script>
 
 <template>
-  <section id="bo-suu-tap" class="trio">
-    <div class="trio__head">
+  <section :id="sectionId || undefined" class="trio">
+    <div v-if="showHead" class="trio__head">
       <div>
         <p class="eyebrow" v-reveal>Craftsmanship creates the beauty of art</p>
         <h2 class="lux-display lux-display--sm" v-reveal="100">Tâm huyết nghệ nhân,<br />kiến tạo vẻ đẹp nghệ thuật</h2>
@@ -42,7 +60,7 @@ const items = computed(() =>
         :to="{ name: 'collection', params: { slug: c.slug } }"
       >
         <div class="trio__media reveal-mask" v-reveal="i * 140">
-          <img v-parallax="0.08" :src="c.img" :alt="c.name" loading="lazy" />
+          <img v-parallax="0.08" :src="c.img" :alt="c.name" :style="{ objectPosition: c.focus }" loading="lazy" />
         </div>
         <div class="trio__hex" aria-hidden="true">
           <svg viewBox="0 0 60 80"><path d="M30 2 L58 20 L58 60 L30 78 L2 60 L2 20 Z" /></svg>
@@ -59,6 +77,12 @@ const items = computed(() =>
         </div>
       </RouterLink>
     </div>
+
+    <div v-if="hasMore" class="trio__more" v-reveal>
+      <RouterLink class="trio__all" :to="{ name: 'collections' }">
+        Xem tất cả {{ collections.length }} bộ sưu tập <span>→</span>
+      </RouterLink>
+    </div>
   </section>
 </template>
 
@@ -67,10 +91,14 @@ const items = computed(() =>
 .trio__head { display: grid; grid-template-columns: 1.2fr 1fr; gap: clamp(28px, 6vw, 100px); align-items: end; margin-bottom: clamp(32px, 4vw, 56px); }
 .trio__head .lux-display { margin: 0; }
 .trio__lead { margin: 0; font-size: 15px; line-height: 1.9; color: var(--ink-soft); max-width: 520px; }
-.trio__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 2vw, 32px); }
+.trio__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(48px, 5vw, 80px) clamp(16px, 2vw, 32px); align-items: start; }
 .trio__card { position: relative; display: block; color: inherit; }
-.trio__card:nth-child(2) { margin-top: clamp(24px, 4vw, 60px); }
-.trio__card:nth-child(1), .trio__card:nth-child(3) { margin-bottom: clamp(24px, 4vw, 60px); }
+.trio__card:nth-child(3n + 2) { margin-top: clamp(24px, 4vw, 60px); }
+.trio__more { display: flex; justify-content: center; margin-top: clamp(40px, 5vw, 64px); }
+.trio__all { display: inline-flex; align-items: center; gap: 12px; padding: 15px 28px; border-radius: 999px; border: 1px solid var(--green); color: var(--green); font-size: 13px; letter-spacing: 0.08em; transition: background 0.4s, color 0.4s, transform 0.4s var(--ease-out); }
+.trio__all:hover { background: var(--green); color: #fff; transform: translateY(-2px); }
+.trio__all span { transition: transform 0.4s var(--ease-out); }
+.trio__all:hover span { transform: translateX(4px); }
 .trio__media { position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--card); }
 .trio__media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: filter 0.8s; }
 .trio__card:hover .trio__media img { filter: brightness(1.06); }

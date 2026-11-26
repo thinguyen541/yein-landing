@@ -27,12 +27,6 @@ const { products, collections, loaded } = useCatalog()
 const selected = ref(null)
 const story = Object.fromEntries(stories.map((s) => [s.id, s]))
 
-// Rail: products flagged "Nổi bật" in admin (or the first ones), max 16
-const railProducts = computed(() => {
-  const f = products.value.filter((p) => p.is_featured)
-  return (f.length >= 6 ? f : [...f, ...products.value.filter((p) => !p.is_featured)]).slice(0, 16)
-})
-
 // Partner dealers (admin → Đại lý)
 const dealers = ref([])
 const dealersLoading = ref(true)
@@ -51,7 +45,7 @@ onMounted(async () => {
 <template>
   <HeroLux />
 
-  <CollectionTrio :collections="collections" />
+  <CollectionTrio :collections="collections" :limit="3" />
 
   <!-- Lookbook: sliding banner photos -->
   <section class="lookbook">
@@ -62,7 +56,7 @@ onMounted(async () => {
     <div v-reveal="150"><HeroSlider :slides="heroSlides" /></div>
   </section>
 
-  <ProductRail :products="railProducts" :total="products.length" :loaded="loaded" @open="selected = $event" />
+  <ProductRail :products="products" :total="products.length" :loaded="loaded" @open="selected = $event" />
   <StoryBlocks :story="story['limited']" />
   <StoryBlocks :story="story['series-h']" />
   <StoryBlocks :story="story['series-y']" />

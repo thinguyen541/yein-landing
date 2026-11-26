@@ -1,5 +1,6 @@
 // Brand stories for the home page (text from the YEIN catalogue, same as the demo).
-// Block types: intro | full | split | duo  – rendered by components/home/StoryBlocks.vue
+// Block types: intro | full | split | duo
+// duo images: a path, or { src, pos: 'x% y%' (focus point kept in frame), fit: 'contain' (show the whole photo) }  – rendered by components/home/StoryBlocks.vue
 const lensSpecs = (frame, coating = 'Phi cầu, lớp phủ AI xanh ngọc') => [
   { k: 'Gọng kính', v: frame },
   { k: 'Vật liệu tròng', v: 'Tròng nhựa chiết suất cao 1.600, 1.665, 1.738' },
@@ -23,7 +24,7 @@ export const stories = [
         text: 'Như những vì sao dùng góc cạnh khắc lời thì thầm của thời gian, mỗi tia sáng kể một câu chuyện vĩnh hằng. Đó là món quà của thời gian, minh chứng cho đẳng cấp và thanh lịch.',
         specs: lensSpecs('Kim cương, sắt, acetate Ý, gỗ đàn hương, bọc vàng, zircon, vàng K, mạ rhodi')
       },
-      { type: 'duo', imgs: ['/img/limited-detail.webp', '/img/h-pink-wide.webp'], title: 'Ánh sáng kín đáo, tinh hoa chế tác truyền đời', text: 'Tuyển chọn vật liệu quý hiếm, tỉ mỉ chế tác hoàn toàn thủ công. Mài giũa đến từng chi tiết nhỏ, theo đuổi sự hoàn mỹ.' }
+      { type: 'duo', imgs: [{ src: '/img/limited-detail.webp', pos: '55% center' }, { src: '/img/h-pink-wide.webp', fit: 'contain' }], title: 'Ánh sáng kín đáo, tinh hoa chế tác truyền đời', text: 'Tuyển chọn vật liệu quý hiếm, tỉ mỉ chế tác hoàn toàn thủ công. Mài giũa đến từng chi tiết nhỏ, theo đuổi sự hoàn mỹ.' }
     ]
   },
   {
@@ -49,7 +50,7 @@ export const stories = [
     blocks: [
       { type: 'full', img: '/img/dragon-branch.webp', eyebrow: 'YEIN × Long Tử Gia', title: 'Long hiện linh khí, vạn vật tỏa sáng', text: 'Bằng ngôn ngữ thiết kế trang sức độc đáo, khắc họa tinh hoa văn hóa rồng. Kết hợp thẩm mỹ hiện đại với di sản truyền thống, làm mới nét xưa theo những cách riêng.', align: 'left', tone: 'light', position: 'right center' },
       { type: 'full', img: '/img/dragon-twig.webp', height: 'short', tone: 'none' },
-      { type: 'duo', imgs: ['/img/dragon-colors.webp', '/img/dragon-sunset.webp'], title: 'Long Linh · Bộ sưu tập Con đường tơ lụa', text: 'Những sắc màu của hoàng hôn sa mạc trên càng kính titan — rực rỡ, nhẹ nhàng và đầy sức sống.' }
+      { type: 'duo', imgs: [{ src: '/img/dragon-colors.webp', pos: '40% center' }, { src: '/img/dragon-sunset.webp', pos: '100% center' }], title: 'Long Linh · Bộ sưu tập Con đường tơ lụa', text: 'Những sắc màu của hoàng hôn sa mạc trên càng kính titan — rực rỡ, nhẹ nhàng và đầy sức sống.' }
     ]
   },
   {

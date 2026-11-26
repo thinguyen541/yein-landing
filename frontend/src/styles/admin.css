@@ -220,3 +220,6 @@ dialog .box { width: min(640px, 94vw); }
 .admin-app .iw-colchip { display: inline-block; background: #fff; border: 1px solid #b9e2c6; border-radius: 99px; padding: 0 10px; margin: 0 4px 0 2px; font-weight: 600; }
 .admin-app .iw-colchip small { color: #6c7370; font-weight: 400; }
 .admin-app .iw-new-tag { display: inline-block; margin-left: 4px; font-size: 10px; font-weight: 700; background: #1a7f3c; color: #fff; border-radius: 99px; padding: 0 6px; vertical-align: 1px; }
+.admin-app .flag-badges { display: flex; gap: 2px; flex-wrap: wrap; }
+.admin-app .badge.hot { background: #fdecec; color: #c62828; }
+.admin-app .badge.new { background: #e6effa; color: #1f5fa8; }

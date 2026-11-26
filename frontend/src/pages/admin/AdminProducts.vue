@@ -24,6 +24,8 @@ const visible = computed(() => {
     if (filter.collection === 'none' && p.collection_id) return false
     if (filter.collection && filter.collection !== 'none' && String(p.collection_id) !== filter.collection) return false
     if (filter.flag === 'featured' && !p.is_featured) return false
+    if (filter.flag === 'hot' && !p.is_hot) return false
+    if (filter.flag === 'new' && !p.is_new) return false
     if (filter.flag === 'hidden' && p.is_active) return false
     return true
   })
@@ -73,6 +75,8 @@ const emptyForm = () => ({
   images: [],
   sort_order: products.value.length,
   is_featured: false,
+  is_hot: false,
+  is_new: true,
   is_active: true,
 })
 
@@ -96,6 +100,8 @@ function openEdit(p) {
     images: p.images?.length ? p.images.map((i) => ({ id: i.id, url: i.url })) : p.image_url ? [{ id: null, url: p.image_url }] : [],
     sort_order: p.sort_order,
     is_featured: !!p.is_featured,
+    is_hot: !!p.is_hot,
+    is_new: !!p.is_new,
     is_active: !!p.is_active,
   }
 }
@@ -232,7 +238,9 @@ function rowDblClick(e, item) {
       </select>
       <select v-model="filter.flag">
         <option value="">Tất cả</option>
+        <option value="hot">Mẫu hot</option>
         <option value="featured">Bán chạy</option>
+        <option value="new">Hàng mới</option>
         <option value="hidden">Đang ẩn</option>
       </select>
       <template v-if="selectedVisible.length">
@@ -258,7 +266,7 @@ function rowDblClick(e, item) {
         <th class="sel">
           <input type="checkbox" title="Chọn tất cả mẫu đang lọc" :checked="allSelected" :indeterminate="someSelected" @change="toggleAll" />
         </th>
-        <th>Ảnh</th><th>Mã</th><th>Bộ sưu tập</th><th>Giá</th><th>Giá KM</th><th>Bán chạy</th><th>Hiển thị</th><th></th>
+        <th>Ảnh</th><th>Mã</th><th>Bộ sưu tập</th><th>Giá</th><th>Giá KM</th><th>Nhãn trang chủ</th><th>Hiển thị</th><th></th>
       </tr>
     </thead>
     <tbody>
@@ -288,9 +296,17 @@ function rowDblClick(e, item) {
         </td>
         <td class="num">{{ money(p.sale_price) }}</td>
         <td>
-          <button class="toggle" title="Bật/tắt bán chạy" @click="toggle(p, 'is_featured')">
-            <span class="badge" :class="p.is_featured ? 'star' : 'off'">{{ p.is_featured ? '★ Bán chạy' : '—' }}</span>
-          </button>
+          <div class="flag-badges">
+            <button class="toggle" title="Bật/tắt Mẫu hot" @click="toggle(p, 'is_hot')">
+              <span class="badge" :class="p.is_hot ? 'hot' : 'off'">Hot</span>
+            </button>
+            <button class="toggle" title="Bật/tắt Bán chạy" @click="toggle(p, 'is_featured')">
+              <span class="badge" :class="p.is_featured ? 'star' : 'off'">Bán chạy</span>
+            </button>
+            <button class="toggle" title="Bật/tắt Hàng mới" @click="toggle(p, 'is_new')">
+              <span class="badge" :class="p.is_new ? 'new' : 'off'">Mới</span>
+            </button>
+          </div>
         </td>
         <td>
           <button class="toggle" title="Bật/tắt hiển thị" @click="toggle(p, 'is_active')">
@@ -349,7 +365,9 @@ function rowDblClick(e, item) {
       <ProductImages v-model="editing.images" />
       <div class="row">
         <label>Thứ tự <input v-model="editing.sort_order" type="number" /></label>
-        <label class="check"><input v-model="editing.is_featured" type="checkbox" /> Bán chạy (trang chủ)</label>
+        <label class="check"><input v-model="editing.is_hot" type="checkbox" /> Mẫu hot</label>
+        <label class="check"><input v-model="editing.is_featured" type="checkbox" /> Bán chạy</label>
+        <label class="check"><input v-model="editing.is_new" type="checkbox" /> Hàng mới</label>
         <label class="check"><input v-model="editing.is_active" type="checkbox" /> Hiển thị</label>
       </div>
       <p class="error">{{ formError }}</p>

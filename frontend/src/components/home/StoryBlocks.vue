@@ -3,6 +3,11 @@
 defineProps({
   story: { type: Object, required: true }
 })
+// duo images can be a path or { src, pos, fit }
+const src = (i) => (typeof i === 'string' ? i : i.src)
+const imgStyle = (i) =>
+  typeof i === 'string' ? {} : { objectPosition: i.pos || 'center', objectFit: i.fit || 'cover' }
+const isContain = (i) => typeof i !== 'string' && i.fit === 'contain'
 </script>
 
 <template>
@@ -68,11 +73,11 @@ defineProps({
 
       <!-- DUO: two staggered images + caption -->
       <div v-else-if="b.type === 'duo'" class="duo">
-        <div class="duo__a reveal-mask" v-reveal>
-          <img v-parallax="0.08" :src="b.imgs[0]" alt="" loading="lazy" />
+        <div class="duo__a reveal-mask" :class="{ 'is-contain': isContain(b.imgs[0]) }" v-reveal>
+          <img v-parallax="isContain(b.imgs[0]) ? 0 : 0.08" :src="src(b.imgs[0])" :style="imgStyle(b.imgs[0])" alt="" loading="lazy" />
         </div>
-        <div class="duo__b reveal-mask" v-reveal="150">
-          <img v-parallax="0.12" :src="b.imgs[1]" alt="" loading="lazy" />
+        <div class="duo__b reveal-mask" :class="{ 'is-contain': isContain(b.imgs[1]) }" v-reveal="150">
+          <img v-parallax="isContain(b.imgs[1]) ? 0 : 0.12" :src="src(b.imgs[1])" :style="imgStyle(b.imgs[1])" alt="" loading="lazy" />
         </div>
         <div class="duo__copy">
           <h3 class="lux-display lux-display--xs" v-reveal>{{ b.title }}</h3>
@@ -299,12 +304,23 @@ defineProps({
 }
 .duo__b {
   grid-column: 8 / span 5;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 3;
   margin-top: 18vh;
+}
+/* "contain" photos keep their own proportions: the frame follows the photo, no empty bands */
+.duo__a.is-contain,
+.duo__b.is-contain {
+  aspect-ratio: auto;
+  background: transparent;
+}
+.duo__a.is-contain img,
+.duo__b.is-contain img {
+  position: relative;
+  height: auto;
 }
 .duo__copy {
   grid-column: 2 / span 5;
-  margin-top: -6vh;
+  margin-top: clamp(20px, 3vw, 44px);
 }
 .duo__copy p {
   font-size: 15px;

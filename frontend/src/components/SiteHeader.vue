@@ -18,7 +18,7 @@ const open = ref(false)
 // to: route path; hash: section on that page
 const links = [
   { label: 'Về YEIN', path: '/ve-yein' },
-  { label: 'Bộ sưu tập', path: '/', hash: '#bo-suu-tap' },
+  { label: 'Bộ sưu tập', path: '/bo-suu-tap' },
   { label: 'Sản phẩm', path: '/san-pham' },
   { label: 'Công nghệ', path: '/', hash: '#cong-nghe' },
   { label: 'Đại lý', path: '/', hash: '#dai-ly' },
@@ -26,8 +26,9 @@ const links = [
 ]
 
 const isActive = (l) =>
-  (l.path === '/san-pham' && (route.name === 'products' || route.name === 'collection')) ||
-  (l.path === '/ve-yein' && !l.hash && route.name === 'about')
+  (l.path === '/san-pham' && route.name === 'products') ||
+  (l.path === '/ve-yein' && !l.hash && route.name === 'about') ||
+  (l.path === '/bo-suu-tap' && (route.name === 'collections' || route.name === 'collection'))
 
 function go(l) {
   open.value = false

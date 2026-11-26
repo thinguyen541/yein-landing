@@ -585,3 +585,11 @@ html.lenis, html.lenis body { height: auto; }
 .main-nav { gap: 28px; }
 .main-nav a { font-size: 14.5px; }
 .main-nav a.btn { padding: 9px 18px; font-size: 13.5px; }
+/* product labels (Hot / Mới / Bán chạy / -x%) on catalogue cards */
+.card-img { position: relative; }
+.card-badges { position: absolute; left: 10px; top: 10px; z-index: 1; display: flex; gap: 5px; flex-wrap: wrap; }
+.card-badges i { font-style: normal; font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: #fff; color: var(--green); }
+.card-badges i.hot { background: #b3261e; color: #fff; }
+.card-badges i.new { background: var(--green); color: #fff; }
+.card-badges i.best { background: var(--gold); color: #fff; }
+.card-badges i.sale { color: #b3261e; }

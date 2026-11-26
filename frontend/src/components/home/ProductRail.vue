@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
-import { thumb, imgFallback } from '../../utils'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { thumb, imgFallback, onSale } from '../../utils'
 import PriceTag from '../PriceTag.vue'
 
 /**
@@ -13,6 +13,42 @@ const props = defineProps({
   loaded: { type: Boolean, default: false },
 })
 const emit = defineEmits(['open'])
+
+// ---- Tabs: Mẫu hot / Bán chạy / Hàng mới / Ưu đãi (labels set in admin) ----
+const MAX = 16
+const newest = (list) => [...list].sort((a, b) => b.id - a.id)
+const tabs = computed(() => {
+  const all = props.products
+  const hot = all.filter((p) => p.is_hot)
+  const best = all.filter((p) => p.is_featured)
+  const fresh = all.filter((p) => p.is_new)
+  const sale = all.filter((p) => onSale(p))
+  const list = [
+    { key: 'hot', label: 'Mẫu hot', items: hot },
+    { key: 'best', label: 'Bán chạy', items: best.length ? best : all },
+    // nothing flagged "Hàng mới" yet -> the most recently added models
+    { key: 'new', label: 'Hàng mới', items: newest(fresh.length ? fresh : all) },
+    { key: 'sale', label: 'Ưu đãi', items: sale },
+  ]
+  return list.filter((t) => t.items.length).map((t) => ({ ...t, items: t.items.slice(0, MAX) }))
+})
+const tab = ref('')
+const current = computed(() => tabs.value.find((t) => t.key === tab.value) || tabs.value[0])
+const shown = computed(() => current.value?.items || [])
+function selectTab(key) {
+  tab.value = key
+  viewport.value?.scrollTo({ left: 0, behavior: 'smooth' })
+}
+
+// little labels on each card
+const badgesOf = (p) => {
+  const b = []
+  if (p.is_hot) b.push({ cls: 'hot', text: 'Hot' })
+  if (p.is_new) b.push({ cls: 'new', text: 'Mới' })
+  if (p.is_featured) b.push({ cls: 'best', text: 'Bán chạy' })
+  if (onSale(p)) b.push({ cls: 'sale', text: `-${Math.round((1 - p.sale_price / p.price) * 100)}%` })
+  return b
+}
 
 const viewport = ref(null)
 const progress = ref(0) // 0..1 scroll position
@@ -68,7 +104,7 @@ function onClickCapture(e) {
 }
 
 watch(
-  () => props.products.length,
+  () => shown.value,
   async () => {
     await nextTick()
     update()
@@ -87,6 +123,17 @@ onBeforeUnmount(() => window.removeEventListener('resize', update))
       <div>
         <p class="eyebrow" v-reveal>Product catalogue</p>
         <h2 class="lux-display lux-display--sm" v-reveal="100">Mẫu kính nổi bật</h2>
+        <div class="rail__tabs" role="tablist" v-reveal="150">
+          <button
+            v-for="t in tabs"
+            :key="t.key"
+            type="button"
+            role="tab"
+            :aria-selected="current?.key === t.key"
+            :class="{ active: current?.key === t.key }"
+            @click="selectTab(t.key)"
+          >{{ t.label }}</button>
+        </div>
       </div>
       <div class="rail__meta" v-reveal="200">
         <RouterLink class="rail__link" :to="{ name: 'products' }">Xem toàn bộ {{ total }} mẫu →</RouterLink>
@@ -111,10 +158,20 @@ onBeforeUnmount(() => window.removeEventListener('resize', update))
       @pointerleave="onUp"
       @click.capture="onClickCapture"
     >
-      <div class="rail__track">
+      <div :key="current?.key" class="rail__track">
         <p v-if="!loaded" class="rail__empty">Đang tải sản phẩm…</p>
-        <button v-for="(p, i) in products" :key="p.id" type="button" class="rcard" @click="emit('open', p)">
+        <button
+          v-for="(p, i) in shown"
+          :key="p.id"
+          type="button"
+          class="rcard"
+          :style="{ '--i': Math.min(i, 6) }"
+          @click="emit('open', p)"
+        >
           <div class="rcard__img">
+            <span v-if="badgesOf(p).length" class="rcard__badges">
+              <i v-for="b in badgesOf(p)" :key="b.cls" :class="b.cls">{{ b.text }}</i>
+            </span>
             <img :src="thumb(p.image_url)" :alt="p.name" loading="lazy" draggable="false" @error="imgFallback($event, p.code)" />
           </div>
           <div class="rcard__info">
@@ -136,12 +193,26 @@ onBeforeUnmount(() => window.removeEventListener('resize', update))
 <style scoped>
 .rail { position: relative; background: var(--paper); padding: clamp(64px, 7vw, 100px) 0; }
 .rail__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding: 0 clamp(28px, 8vw, 140px); margin-bottom: 44px; }
+.rail__tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 22px; }
+.rail__tabs button { padding: 9px 18px; border-radius: 999px; border: 1px solid rgba(15, 48, 45, 0.22); background: transparent; color: var(--ink); font: inherit; font-size: 13px; letter-spacing: 0.04em; cursor: pointer; transition: background 0.3s, color 0.3s, border-color 0.3s; }
+.rail__tabs button:hover { border-color: var(--green); }
+.rail__tabs button.active { background: var(--green); border-color: var(--green); color: #fff; }
+.rail__tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+.rail__track .rcard { animation: rcardIn 0.8s var(--ease-out) backwards; animation-delay: calc(var(--i) * 60ms); }
+@keyframes rcardIn { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: none; } }
+.rcard__img { position: relative; }
+.rcard__badges { position: absolute; left: 12px; top: 12px; z-index: 1; display: flex; gap: 6px; }
+.rcard__badges i { font-style: normal; font-size: 10.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; background: #fff; color: var(--green); box-shadow: 0 4px 14px -6px rgba(6, 35, 31, 0.35); }
+.rcard__badges i.hot { background: #b3261e; color: #fff; }
+.rcard__badges i.new { background: var(--green); color: #fff; }
+.rcard__badges i.best { background: var(--gold); color: #fff; }
+.rcard__badges i.sale { background: #fff; color: #b3261e; }
 .rail__nav { display: flex; align-items: center; gap: 10px; }
 .rail__arrow { width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(15, 48, 45, 0.3); background: transparent; color: var(--green); font-size: 18px; cursor: pointer; transition: background 0.3s, color 0.3s, opacity 0.3s; }
 .rail__arrow:hover:not(:disabled) { background: var(--green); color: #fff; }
 .rail__arrow:disabled { opacity: 0.3; cursor: default; }
 .rail__arrow:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
-.rail__viewport { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scrollbar-width: none; cursor: grab; padding: 14px 0 20px; overscroll-behavior-x: contain; }
+.rail__viewport { overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding-inline: clamp(28px, 8vw, 140px); scrollbar-width: none; cursor: grab; padding: 14px 0 20px; overscroll-behavior-x: contain; }
 .rail__viewport::-webkit-scrollbar { display: none; }
 .rail__viewport:active { cursor: grabbing; }
 .rail__head .lux-display { margin: 0; }
@@ -174,6 +245,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', update))
   .rail__head { flex-direction: column; align-items: flex-start; padding: 0 24px; margin-bottom: 28px; }
   .rail__meta { align-items: flex-start; text-align: left; }
   .rail__track { padding: 0 24px; gap: 16px; }
+  .rail__viewport { scroll-padding-inline: 24px; }
   .rcard { width: 70vw; }
   .rail__viewport { cursor: auto; }
 }

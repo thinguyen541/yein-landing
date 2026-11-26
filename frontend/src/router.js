@@ -13,6 +13,7 @@ const routes = [
     children: [
       { path: '', name: 'home', component: HomePage },
       { path: 'san-pham', name: 'products', component: () => import('./pages/CatalogPage.vue') },
+      { path: 'bo-suu-tap', name: 'collections', component: () => import('./pages/CollectionsPage.vue') },
       { path: 'bo-suu-tap/:slug', name: 'collection', component: () => import('./pages/CatalogPage.vue') },
       { path: 've-yein', name: 'about', component: () => import('./pages/AboutPage.vue') },
       { path: ':pathMatch(.*)*', name: 'not-found', component: () => import('./pages/NotFound.vue') },
